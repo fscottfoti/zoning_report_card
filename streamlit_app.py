@@ -199,7 +199,7 @@ def create_multi_scenario_stacked_chart(all_data, categories, data_key, colors):
             traceorder="normal",
         ),
         plot_bgcolor="white",
-        margin=dict(l=150, r=50, t=50, b=50),
+        margin=dict(l=0, r=20, t=30, b=30),
     )
 
     return fig
@@ -261,7 +261,7 @@ def create_total_feasibility_chart(df, color):
             gridcolor="lightgray",
         ),
         plot_bgcolor="white",
-        margin=dict(l=50, r=50, t=50, b=50),
+        margin=dict(l=0, r=20, t=30, b=30),
         showlegend=True,
         legend=dict(
             orientation="h",
@@ -332,7 +332,7 @@ def create_building_type_chart(df, colors):
             traceorder="normal",
         ),
         plot_bgcolor="white",
-        margin=dict(l=150, r=50, t=50, b=50),
+        margin=dict(l=0, r=20, t=30, b=30),
     )
 
     return fig
@@ -401,7 +401,7 @@ def create_income_bracket_chart(df, colors):
             traceorder="normal",
         ),
         plot_bgcolor="white",
-        margin=dict(l=150, r=50, t=50, b=50),
+        margin=dict(l=0, r=20, t=30, b=30),
     )
 
     return fig
@@ -470,7 +470,7 @@ def create_bedroom_count_chart(df, colors):
             traceorder="normal",
         ),
         plot_bgcolor="white",
-        margin=dict(l=150, r=50, t=50, b=50),
+        margin=dict(l=0, r=20, t=30, b=30),
     )
 
     return fig
