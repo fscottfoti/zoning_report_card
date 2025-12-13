@@ -205,18 +205,18 @@ def create_multi_scenario_stacked_chart(all_data, categories, data_key, colors):
     return fig
 
 
-def create_total_feasibility_chart(df, color):
-    """Create grouped bar chart for total feasibility totals."""
+def create_total_feasibility_chart_grouped(scenario_names, total_data_dict, color):
+    """Create grouped bar chart for total units vs affordable units."""
     fig = go.Figure()
 
     # Add Total Units bar
     fig.add_trace(
         go.Bar(
             name="Total Units",
-            x=df["Category"],
-            y=df["Total Units"],
+            x=scenario_names,
+            y=total_data_dict["Total Units"],
             marker_color=color,
-            text=[f"{p}" for p in df["Total Units"]],
+            text=[f"{int(v)}" for v in total_data_dict["Total Units"]],
             textposition="inside",
             textfont=dict(color="white", size=14, weight="bold"),
             hovertemplate="Total Units: %{y}<extra></extra>",
@@ -224,29 +224,29 @@ def create_total_feasibility_chart(df, color):
     )
 
     # Add Affordable Units bar with minimum display value
-    # Calculate minimum bar size (1% of max value)
-    max_value = max(df["Total Units"].max(), df["Affordable Units"].max())
+    max_value = max(
+        max(total_data_dict["Total Units"]), max(total_data_dict["Affordable Units"])
+    )
     min_display_value = max_value * 0.01
 
-    # Create display values: use actual if non-zero, otherwise use min_display_value
     affordable_display = [
-        val if val > 0 else min_display_value for val in df["Affordable Units"]
+        val if val > 0 else min_display_value for val in total_data_dict["Affordable Units"]
     ]
-    affordable_actual = df["Affordable Units"].tolist()
 
     fig.add_trace(
         go.Bar(
             name="Affordable Units",
-            x=df["Category"],
+            x=scenario_names,
             y=affordable_display,
             marker_color="#5DBDB4",
             text=[
-                f"{int(actual)}" if actual > 0 else "" for actual in affordable_actual
+                f"{int(actual)}" if actual > 0 else ""
+                for actual in total_data_dict["Affordable Units"]
             ],
             textposition="inside",
             textfont=dict(color="white", size=14, weight="bold"),
             hovertemplate="Affordable Units: %{customdata}<extra></extra>",
-            customdata=affordable_actual,
+            customdata=total_data_dict["Affordable Units"],
         )
     )
 
@@ -261,7 +261,7 @@ def create_total_feasibility_chart(df, color):
             gridcolor="lightgray",
         ),
         plot_bgcolor="white",
-        margin=dict(l=0, r=20, t=30, b=30),
+        margin=dict(l=50, r=50, t=50, b=50),
         showlegend=True,
         legend=dict(
             orientation="h",
@@ -270,276 +270,6 @@ def create_total_feasibility_chart(df, color):
             xanchor="right",
             x=1,
         ),
-    )
-
-    return fig
-
-
-def create_building_type_chart(df, colors):
-    """Create stacked bar chart for building types."""
-    fig = go.Figure()
-
-    # Add bars for each building type
-    for i, building_type in enumerate(df["Building Type"]):
-        # Zoned bar
-        fig.add_trace(
-            go.Bar(
-                name=building_type,
-                x=["Zoned*"],
-                y=[df.loc[i, "Zoned"]],
-                marker_color=colors[building_type],
-                text=f"{df.loc[i, 'Zoned']}%",
-                textposition="inside",
-                textfont=dict(color="white", size=14),
-                showlegend=True,
-                legendgroup=building_type,
-                hovertemplate=f'{building_type}: {df.loc[i, "Zoned"]}%<extra></extra>',
-            )
-        )
-
-        # Unzoned bar
-        fig.add_trace(
-            go.Bar(
-                name=building_type,
-                x=["Unzoned"],
-                y=[df.loc[i, "Unzoned"]],
-                marker_color=colors[building_type],
-                text=f"{df.loc[i, 'Unzoned']}%",
-                textposition="inside",
-                textfont=dict(color="white", size=14),
-                showlegend=False,  # Don't duplicate in legend
-                legendgroup=building_type,
-                hovertemplate=f'{building_type}: {df.loc[i, "Unzoned"]}%<extra></extra>',
-            )
-        )
-
-    # Update layout
-    fig.update_layout(
-        barmode="stack",
-        height=600,
-        xaxis=dict(title="", tickfont=dict(size=14)),
-        yaxis=dict(
-            title="", showticklabels=False, showgrid=True, gridcolor="lightgray"
-        ),
-        legend=dict(
-            title="",
-            orientation="v",
-            yanchor="top",
-            y=1,
-            xanchor="left",
-            x=-0.15,
-            font=dict(size=12),
-            traceorder="normal",
-        ),
-        plot_bgcolor="white",
-        margin=dict(l=0, r=20, t=30, b=30),
-    )
-
-    return fig
-
-
-def create_income_bracket_chart(df, colors):
-    """Create stacked bar chart for income brackets."""
-    fig = go.Figure()
-
-    # Add bars for each income bracket
-    for i, income_bracket in enumerate(df["Income Bracket"]):
-        # Zoned bar
-        fig.add_trace(
-            go.Bar(
-                name=income_bracket,
-                x=["Zoned*"],
-                y=[df.loc[i, "Zoned_pct"]],
-                marker_color=colors[income_bracket],
-                text=(
-                    f"{df.loc[i, 'Zoned_pct']}%" if df.loc[i, "Zoned_pct"] > 0 else ""
-                ),
-                textposition="inside",
-                textfont=dict(color="white", size=14),
-                showlegend=True,
-                legendgroup=income_bracket,
-                hovertemplate=f'{income_bracket}: {df.loc[i, "Zoned_pct"]}%<extra></extra>',
-            )
-        )
-
-        # Unzoned bar
-        fig.add_trace(
-            go.Bar(
-                name=income_bracket,
-                x=["Unzoned"],
-                y=[df.loc[i, "Unzoned_pct"]],
-                marker_color=colors[income_bracket],
-                text=(
-                    f"{df.loc[i, 'Unzoned_pct']}%"
-                    if df.loc[i, "Unzoned_pct"] > 0
-                    else ""
-                ),
-                textposition="inside",
-                textfont=dict(color="white", size=14),
-                showlegend=False,
-                legendgroup=income_bracket,
-                hovertemplate=f'{income_bracket}: {df.loc[i, "Unzoned_pct"]}%<extra></extra>',
-            )
-        )
-
-    # Update layout
-    fig.update_layout(
-        barmode="stack",
-        height=600,
-        xaxis=dict(title="", tickfont=dict(size=14)),
-        yaxis=dict(
-            title="", showticklabels=False, showgrid=True, gridcolor="lightgray"
-        ),
-        legend=dict(
-            title="",
-            orientation="v",
-            yanchor="top",
-            y=1,
-            xanchor="left",
-            x=-0.15,
-            font=dict(size=12),
-            traceorder="normal",
-        ),
-        plot_bgcolor="white",
-        margin=dict(l=0, r=20, t=30, b=30),
-    )
-
-    return fig
-
-
-def create_bedroom_count_chart(df, colors):
-    """Create stacked bar chart for bedroom counts."""
-    fig = go.Figure()
-
-    # Add bars for each bedroom count
-    for i, bedroom_count in enumerate(df["Bedroom Count"]):
-        # Zoned bar
-        fig.add_trace(
-            go.Bar(
-                name=bedroom_count,
-                x=["Zoned*"],
-                y=[df.loc[i, "Zoned_pct"]],
-                marker_color=colors[bedroom_count],
-                text=(
-                    f"{df.loc[i, 'Zoned_pct']}%" if df.loc[i, "Zoned_pct"] > 0 else ""
-                ),
-                textposition="inside",
-                textfont=dict(color="white", size=14),
-                showlegend=True,
-                legendgroup=bedroom_count,
-                hovertemplate=f'{bedroom_count}: {df.loc[i, "Zoned_pct"]}%<extra></extra>',
-            )
-        )
-
-        # Unzoned bar
-        fig.add_trace(
-            go.Bar(
-                name=bedroom_count,
-                x=["Unzoned"],
-                y=[df.loc[i, "Unzoned_pct"]],
-                marker_color=colors[bedroom_count],
-                text=(
-                    f"{df.loc[i, 'Unzoned_pct']}%"
-                    if df.loc[i, "Unzoned_pct"] > 0
-                    else ""
-                ),
-                textposition="inside",
-                textfont=dict(color="white", size=14),
-                showlegend=False,
-                legendgroup=bedroom_count,
-                hovertemplate=f'{bedroom_count}: {df.loc[i, "Unzoned_pct"]}%<extra></extra>',
-            )
-        )
-
-    # Update layout
-    fig.update_layout(
-        barmode="stack",
-        height=600,
-        xaxis=dict(title="", tickfont=dict(size=14)),
-        yaxis=dict(
-            title="", showticklabels=False, showgrid=True, gridcolor="lightgray"
-        ),
-        legend=dict(
-            title="",
-            orientation="v",
-            yanchor="top",
-            y=1,
-            xanchor="left",
-            x=-0.15,
-            font=dict(size=12),
-            traceorder="normal",
-        ),
-        plot_bgcolor="white",
-        margin=dict(l=0, r=20, t=30, b=30),
-    )
-
-    return fig
-
-
-def create_parking_chart(df, colors):
-    """Create stacked bar chart for parking types."""
-    fig = go.Figure()
-
-    # Add bars for each parking type
-    for i, parking_type in enumerate(df["Parking Type"]):
-        # Zoned bar
-        fig.add_trace(
-            go.Bar(
-                name=parking_type,
-                x=["Zoned*"],
-                y=[df.loc[i, "Zoned_pct"]],
-                marker_color=colors[parking_type],
-                text=(
-                    f"{df.loc[i, 'Zoned_pct']}%" if df.loc[i, "Zoned_pct"] > 0 else ""
-                ),
-                textposition="inside",
-                textfont=dict(color="white", size=14),
-                showlegend=True,
-                legendgroup=parking_type,
-                hovertemplate=f'{parking_type}: {df.loc[i, "Zoned_pct"]}%<extra></extra>',
-            )
-        )
-
-        # Unzoned bar
-        fig.add_trace(
-            go.Bar(
-                name=parking_type,
-                x=["Unzoned"],
-                y=[df.loc[i, "Unzoned_pct"]],
-                marker_color=colors[parking_type],
-                text=(
-                    f"{df.loc[i, 'Unzoned_pct']}%"
-                    if df.loc[i, "Unzoned_pct"] > 0
-                    else ""
-                ),
-                textposition="inside",
-                textfont=dict(color="white", size=14),
-                showlegend=False,
-                legendgroup=parking_type,
-                hovertemplate=f'{parking_type}: {df.loc[i, "Unzoned_pct"]}%<extra></extra>',
-            )
-        )
-
-    # Update layout
-    fig.update_layout(
-        barmode="stack",
-        height=600,
-        xaxis=dict(title="", tickfont=dict(size=14)),
-        yaxis=dict(
-            title="", showticklabels=False, showgrid=True, gridcolor="lightgray"
-        ),
-        legend=dict(
-            title="",
-            orientation="v",
-            yanchor="top",
-            y=1,
-            xanchor="left",
-            x=-0.15,
-            font=dict(size=12),
-            traceorder="normal",
-        ),
-        plot_bgcolor="white",
-        margin=dict(l=150, r=50, t=50, b=50),
     )
 
     return fig
@@ -572,7 +302,7 @@ for i in range(1, 10):  # Support up to 9 scenarios
     elif not url and i < 3:
         url = default_zoned_url
     if url:
-        zoned_scenarios.append({"url": url, "name": f"Zoning Scenario {i}"})
+        zoned_scenarios.append({"url": url, "name": f"Scenario {i}"})
 
 # Validate we have at least one URL
 if not unzoned_csv_url and not zoned_scenarios:
@@ -640,70 +370,7 @@ for data in all_data:
 df_total = pd.DataFrame(total_data_dict, index=scenario_names)
 
 # Create grouped bar chart for total feasibility
-fig_total = go.Figure()
-
-# Add Total Units bar
-fig_total.add_trace(
-    go.Bar(
-        name="Total Units",
-        x=scenario_names,
-        y=total_data_dict["Total Units"],
-        marker_color=total_feasibility_color,
-        text=[f"{int(v)}" for v in total_data_dict["Total Units"]],
-        textposition="inside",
-        textfont=dict(color="white", size=14, weight="bold"),
-        hovertemplate="Total Units: %{y}<extra></extra>",
-    )
-)
-
-# Add Affordable Units bar with minimum display value
-max_value = max(
-    max(total_data_dict["Total Units"]), max(total_data_dict["Affordable Units"])
-)
-min_display_value = max_value * 0.01
-
-affordable_display = [
-    val if val > 0 else min_display_value for val in total_data_dict["Affordable Units"]
-]
-
-fig_total.add_trace(
-    go.Bar(
-        name="Affordable Units",
-        x=scenario_names,
-        y=affordable_display,
-        marker_color="#5DBDB4",
-        text=[
-            f"{int(actual)}" if actual > 0 else ""
-            for actual in total_data_dict["Affordable Units"]
-        ],
-        textposition="inside",
-        textfont=dict(color="white", size=14, weight="bold"),
-        hovertemplate="Affordable Units: %{customdata}<extra></extra>",
-        customdata=total_data_dict["Affordable Units"],
-    )
-)
-
-# Update layout
-fig_total.update_layout(
-    barmode="group",
-    height=400,
-    xaxis=dict(title="", tickfont=dict(size=14)),
-    yaxis=dict(
-        title="",
-        showgrid=True,
-        gridcolor="lightgray",
-    ),
-    plot_bgcolor="white",
-    margin=dict(l=50, r=50, t=50, b=50),
-    showlegend=True,
-    legend=dict(
-        orientation="h",
-        yanchor="bottom",
-        y=1.02,
-        xanchor="right",
-        x=1,
-    ),
-)
+fig_total = create_total_feasibility_chart_grouped(scenario_names, total_data_dict, total_feasibility_color)
 
 st.plotly_chart(fig_total, use_container_width=True)
 st.subheader("Feasibility Data")
