@@ -259,9 +259,10 @@ def create_total_feasibility_chart_grouped(scenario_names, total_data_dict, colo
             title="",
             showgrid=True,
             gridcolor="lightgray",
+            showticklabels=False,
         ),
         plot_bgcolor="white",
-        margin=dict(l=50, r=50, t=50, b=50),
+        margin=dict(l=0, r=20, t=30, b=30),
         showlegend=True,
         legend=dict(
             orientation="h",
